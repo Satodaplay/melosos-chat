@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!-- saved from url=(0029)http://127.0.0.1:5000/profile -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Perfil</title>
+    <link rel="stylesheet" href="./Configuración de Perfil_files/style.css">
+</head>
+<body>
+    <div class="profile-container-perfil">
+        <div class="profile-card">
+            <h2>Configuración de Perfil</h2>
+            <div class="profile-photo-container">
+                <img id="profile-photo-preview" src="./Configuración de Perfil_files/si.jpg" alt="Foto de perfil" style="display: block;">
+                <label for="profile-photo" class="upload-button">Subir Foto</label>
+                <input type="file" id="profile-photo" accept="image/*">
+            </div>
+            <form id="profile-form">
+                <input type="text" id="profile-username" placeholder="Username" readonly="">
+                <textarea id="profile-description" placeholder="Descripción"></textarea>
+                <button type="submit">Guardar Cambios</button>
+            </form>
+            <button id="delete-account">Borrar Cuenta</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/profile_data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('profile-username').value = data.username;
+                    document.getElementById('profile-description').value = data.description;
+                    if (data.photo) {
+                        const photoPreview = document.getElementById('profile-photo-preview');
+                        photoPreview.src = `/uploads/${data.photo}`;
+                        photoPreview.style.display = 'block';
+                    }
+                });
+
+            document.getElementById('profile-photo').addEventListener('change', function() {
+                const photoPreview = document.getElementById('profile-photo-preview');
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        photoPreview.src = e.target.result;
+                        photoPreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    photoPreview.src = '#';
+                    photoPreview.style.display = 'none';
+                }
+            });
+
+            document.getElementById('profile-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const description = document.getElementById('profile-description').value;
+                const photo = document.getElementById('profile-photo').files[0];
+                
+                const formData = new FormData();
+                formData.append('description', description);
+                if (photo) {
+                    formData.append('photo', photo);
+                }
+
+                fetch('/update_profile', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Perfil actualizado con éxito');
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            });
+
+            document.getElementById('delete-account').addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que deseas borrar tu cuenta? Esta acción es irreversible.')) {
+                    fetch('/delete_account', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/logout';
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+</body></html>

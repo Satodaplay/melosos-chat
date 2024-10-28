@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Registro</h2>
+        <form id="register-form">
+            <input type="text" id="register-username" placeholder="Username" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+            <button type="submit">Registrar</button>
+        </form>
+        <p>¿Ya tienes una cuenta? <a href="/login">Inicia sesión aquí</a>.</p>
+    </div>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/login';
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
